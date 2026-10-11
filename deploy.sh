@@ -80,23 +80,33 @@ npx prisma db push --skip-generate || {
   echo "⚠️  Warning: prisma db push encountered an issue. Ensure MySQL is running."
 }
 
-# 7. Start or restart the service
+# 7. Start or restart the services
 echo "=========================================================="
 echo "✨ Deployment successful!"
-echo "📡 Server Port:         $PORT"
-echo "🌐 Web App & Admin:     http://localhost:$PORT/"
-echo "🩺 API Health Check:    http://localhost:$PORT/api/health"
-echo "📱 Android APK:         http://localhost:$PORT/download/apk"
+echo "🌐 Frontend Web App:    http://localhost:${FRONTEND_PORT:-3005}/"
+echo "📡 Backend API Server:  http://localhost:${PORT:-5001}/"
+echo "🩺 API Health Check:    http://localhost:${PORT:-5001}/api/health"
+echo "📱 Android APK:         http://localhost:${PORT:-5001}/download/apk"
 echo "=========================================================="
 
 # Check if PM2 is available for production process supervision
 if command -v pm2 &> /dev/null; then
   echo "🔄 Starting / restarting application via PM2 process manager..."
-  pm2 restart lottery-management 2>/dev/null || pm2 start server.js --name "lottery-management"
+  if [ -f "ecosystem.config.cjs" ]; then
+    pm2 restart ecosystem.config.cjs 2>/dev/null || pm2 start ecosystem.config.cjs
+  else
+    pm2 restart lottery-backend 2>/dev/null || pm2 start server.js --name "lottery-backend"
+    if [ -f "frontend-server.js" ]; then
+      pm2 restart lottery-frontend 2>/dev/null || pm2 start frontend-server.js --name "lottery-frontend"
+    fi
+  fi
   pm2 save
-  echo "✅ Application running under PM2 ('pm2 logs lottery-management' for logs)"
+  echo "✅ Services running under PM2:"
+  echo "   - lottery-backend   (Port ${PORT:-5001})"
+  echo "   - lottery-frontend  (Port ${FRONTEND_PORT:-3005})"
+  echo "Run 'pm2 list' or 'pm2 logs' to view status."
 else
   echo "▶️  PM2 not found. Starting server in foreground via Node.js..."
-  echo "💡 Tip: Install PM2 (npm install -g pm2) for automatic restarts and process monitoring."
+  echo "💡 Tip: Install PM2 (npm install -g pm2) for automatic restarts and separate process management."
   exec node server.js
 fi
