@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==============================================================================
 # GameXpro Lottery Management System - Target Server Deployment Script
-# Runs on the target host/server to deploy, configure, migrate, and start the app
+# Runs on the target host/server to deploy, configure, migrate and start the app
 # ==============================================================================
 set -e
 
@@ -59,8 +59,9 @@ if [ ! -f ".env" ]; then
     cat << 'EOF' > .env
 NODE_ENV=production
 PORT=5001
+FRONTEND_PORT=3005
 DATABASE_URL="mysql://root:@localhost:3306/LotteryManagement"
-VITE_API_BASE_URL="http://localhost:5001"
+VITE_API_BASE_URL="http://192.168.225.100:5001"
 EOF
   fi
   echo "⚠️  Please check and configure database credentials in .env!"
