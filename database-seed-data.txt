@@ -1,0 +1,61 @@
+-- ========================================================
+-- 1. SEED PAYOUT RULES (PayoutRule)
+-- ========================================================
+INSERT INTO `PayoutRule` (`betType`, `multiplier`, `active`)
+VALUES
+  ('Digit Bet', 7.0, 1),
+  ('Fortune Pair', 70.0, 1),
+  ('Single Line', 100.0, 1),
+  ('Half Fortune', 500.0, 1),
+  ('Full Fortune', 1000.0, 1)
+ON DUPLICATE KEY UPDATE 
+  `multiplier` = VALUES(`multiplier`),
+  `active` = VALUES(`active`);
+
+
+-- ========================================================
+-- 2. SEED EMPLOYEES (Employee)
+-- Roles: ADMIN, CAGE_OPERATOR, OPERATOR
+-- ========================================================
+INSERT INTO `Employee` (`name`, `username`, `password`, `badgeId`, `rfid`, `pin`, `phone`, `role`, `status`, `createdAt`, `updatedAt`)
+VALUES
+  -- 1. System Administrator
+  ('Sarah Connor', 'admin.sarah', 'Lottery@123', 'ADM-1001', 'RFID000333', '1001', '9876543210', 'ADMIN', 1, NOW(), NOW()),
+
+  -- 2. POS Ticket Operator (Terminal / POS login with PIN or RFID)
+  ('Marcus Vance', NULL, NULL, 'OP-9042', 'RFID000111', '9042', '9876543211', 'OPERATOR', 1, NOW(), NOW()),
+
+  -- 3. Cage Desk Redemptions Operator #01
+  ('Elena Rostova', 'cage.elena', 'Lottery@123', 'CAGE-3011', 'RFID000222', '3011', '9876543212', 'CAGE_OPERATOR', 1, NOW(), NOW()),
+
+  -- 4. Cage Desk Redemptions Operator #02
+  ('Sandesh', 'cage.sandesh', 'Lottery@123', 'CAGE-3012', 'RFID000444', '2626', '9876543213', 'CAGE_OPERATOR', 1, NOW(), NOW())
+ON DUPLICATE KEY UPDATE 
+  `name` = VALUES(`name`),
+  `role` = VALUES(`role`),
+  `pin` = VALUES(`pin`),
+  `password` = VALUES(`password`),
+  `status` = VALUES(`status`),
+  `updatedAt` = NOW();
+
+
+-- ========================================================
+-- 3. SEED CAGE STATION (Cage)
+-- ========================================================
+INSERT INTO `Cage` (`cageCode`, `stationName`, `openingFloat`, `currentBalance`, `totalPayout`, `todayPaidCount`, `status`, `createdAt`, `updatedAt`)
+VALUES
+  ('CAGE-01', 'Cage Desk #01', 100000.0, 100000.0, 0.0, 0, 'OPEN', NOW(), NOW())
+ON DUPLICATE KEY UPDATE
+  `currentBalance` = VALUES(`currentBalance`),
+  `status` = VALUES(`status`);
+
+
+-- ========================================================
+-- 4. SEED TERMINAL CONFIGURATION (TerminalConfig)
+-- ========================================================
+INSERT INTO `TerminalConfig` (`id`, `stationName`, `terminalNodeId`, `maxBetPerLine`, `maxTicketLimit`, `autoPrintReceipt`, `paperRollPct`, `cutoffBufferSeconds`, `soundEffectsEnabled`, `updatedAt`)
+VALUES
+  (1, 'Terminal Station #04', 'NODE-4092-NYC-01', 50000.0, 250000.0, 1, 100, 60, 1, NOW())
+ON DUPLICATE KEY UPDATE
+  `stationName` = VALUES(`stationName`),
+  `updatedAt` = NOW();
